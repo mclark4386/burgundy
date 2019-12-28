@@ -1,7 +1,6 @@
 package gssreporter
 
 import (
-	"fmt"
 	"io/ioutil"
 
 	"github.com/mclark4386/burgundy"
@@ -13,34 +12,29 @@ import (
 
 type GSSReporter struct {
 	CredFilePath  string
+	CredFile      []byte
 	TokenFilePath string
 	SpreadSheetID string
 	SheetID       uint
 }
 
 func (r GSSReporter) Process(headers burgundy.Headers, rows []burgundy.Row) ([]byte, error) {
-	output_data := [][]string{}
-	output_data = append(output_data, headers)
-	for _, row := range rows {
-		new_row := make([]string, len(row))
-		for i, field := range row {
-			if str, ok := field.(fmt.Stringer); ok {
-				new_row[i] = str.String()
-			} else {
-				new_row[i] = fmt.Sprintf("%v", field)
-			}
-		}
-		output_data = append(output_data, new_row)
-	}
+	output_data := burgundy.DataBlockForProcessing(headers, rows, false)
 
 	credFilePath := r.CredFilePath
 	if credFilePath == "" {
 		credFilePath = "credentials.json"
 	}
 
-	data, err := ioutil.ReadFile(credFilePath)
-	if err != nil {
-		return []byte{}, err
+	var data []byte
+	var err error
+	if r.CredFile == nil {
+		data, err = ioutil.ReadFile(credFilePath)
+		if err != nil {
+			return []byte{}, err
+		}
+	} else {
+		data = r.CredFile
 	}
 
 	conf, err := google.JWTConfigFromJSON(data, spreadsheet.Scope)

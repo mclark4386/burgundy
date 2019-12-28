@@ -71,6 +71,13 @@ func processOrder(item Subject) ColOrder {
 	return order
 }
 
+func Report(items interface{}, e Reporter) ([]byte, error) {
+	return Process(items, e)
+}
+
+/// Process takes the given items and reflects the structure of them to find the headers and
+/// proper order of the columns. It then grabs all the data creating a row per item and passes
+/// this all on to the star of the show the Anchor... I mean Reporter.
 func Process(items interface{}, e Reporter) ([]byte, error) {
 	t := reflect.ValueOf(items)
 	if t.Kind() != reflect.Slice {
@@ -96,4 +103,27 @@ func Process(items interface{}, e Reporter) ([]byte, error) {
 	}
 
 	return e.Process(headers, input)
+}
+
+/// DataBlockForProcessing takes the [headers] and [rows] and creates a 2D array of strings
+/// if [dontAddHeaders] isn't true the first row will be the headers, and the rest of the
+/// row data will be converted to strings and put in place. If the type of the data in a given
+/// field/cell adheres to the [fmt.Stringer] interface that will be used in the conversion.
+func DataBlockForProcessing(headers Headers, rows []Row, dontAddHeaders bool) [][]string {
+	output_data := [][]string{}
+	if !dontAddHeaders {
+		output_data = append(output_data, headers)
+	}
+	for _, row := range rows {
+		new_row := make([]string, len(row))
+		for i, field := range row {
+			if str, ok := field.(fmt.Stringer); ok {
+				new_row[i] = str.String()
+			} else {
+				new_row[i] = fmt.Sprintf("%v", field)
+			}
+		}
+		output_data = append(output_data, new_row)
+	}
+	return output_data
 }

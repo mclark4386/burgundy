@@ -37,6 +37,15 @@ type Emotions struct {
 
 var expectedEmotionOrder = []int{2, 0, 1, 5, 3}
 
+type Person struct {
+	FirstName string
+	LastName  string
+}
+
+func (p Person) String() string {
+	return p.FirstName + " " + p.LastName
+}
+
 func TestBurgundyTestSuite(t *testing.T) {
 	suite.Run(t, new(BurgundyTestSuite))
 }
@@ -137,6 +146,11 @@ func (bs *BurgundyTestSuite) TestProcess() {
 
 	bs.Equal(expectedLen, len(data))
 	bs.NoError(err)
+
+	data, err = Report([]Lamp{}, MockReporter{TestSuite: bs.Suite})
+
+	bs.Equal(expectedLen, len(data))
+	bs.NoError(err)
 }
 
 func (bs *BurgundyTestSuite) TestProcess_shouldFailWithWrongType() {
@@ -156,4 +170,37 @@ func (bs *BurgundyTestSuite) TestProcess_shouldFailWithWrongType() {
 
 	bs.Equal(expectedLen, len(data))
 	bs.Error(err)
+
+	data, err = Report(4, MockReporter{TestSuite: bs.Suite})
+
+	bs.Equal(expectedLen, len(data))
+	bs.Error(err)
+}
+
+func (bs *BurgundyTestSuite) TestDataBlockForProcessing() {
+	headers := Headers{"First!", "Second"}
+	rows := []Row{
+		{
+			"blue",
+			42,
+		},
+		{
+			"It's Science!",
+			Person{
+				FirstName: "Dorthy",
+				LastName:  "Mantooth",
+			},
+		},
+	}
+	expectedLen := 3
+
+	data := DataBlockForProcessing(headers, rows, false)
+
+	bs.Equal(expectedLen, len(data))
+	bs.Equal("Dorthy Mantooth", data[2][1])
+
+	data = DataBlockForProcessing(headers, rows, true)
+
+	bs.Equal(expectedLen-1, len(data))
+	bs.Equal("Dorthy Mantooth", data[1][1])
 }
