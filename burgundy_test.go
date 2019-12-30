@@ -94,6 +94,14 @@ func (bs *BurgundyTestSuite) TestProcessHeaders() {
 	for i, header := range expectedLampHeaders {
 		bs.Equal(header, test_headers[i])
 	}
+
+	test_headers = processHeaders(&i_love, expectedLampOrder)
+
+	fmt.Printf("test_headers: %+v\n", test_headers)
+	bs.Equal(3, len(test_headers))
+	for i, header := range expectedLampHeaders {
+		bs.Equal(header, test_headers[i])
+	}
 }
 
 func (bs *BurgundyTestSuite) TestProcessOrder() {
@@ -113,6 +121,15 @@ func (bs *BurgundyTestSuite) TestProcessOrder() {
 	}
 
 	test_order = processOrder(Emotions{})
+
+	fmt.Printf("test_order2: %+v\n", test_order)
+
+	bs.Equal(len(expectedEmotionOrder), len(test_order))
+	for i, expectedIndex := range expectedEmotionOrder {
+		bs.Equal(expectedIndex, test_order[i])
+	}
+
+	test_order = processOrder(&Emotions{})
 
 	fmt.Printf("test_order2: %+v\n", test_order)
 
