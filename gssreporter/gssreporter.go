@@ -46,12 +46,12 @@ func (r GSSReporter) Process(headers burgundy.Headers, rows []burgundy.Row) ([]b
 	service := spreadsheet.NewServiceWithClient(client)
 
 	spreadsheetID := r.SpreadSheetID
-	spreadsheet, err := service.FetchSpreadsheet(spreadsheetID)
+	ssheet, err := service.FetchSpreadsheet(spreadsheetID)
 	if err != nil {
 		return []byte{}, err
 	}
 
-	sheet, err := spreadsheet.SheetByID(r.SheetID)
+	sheet, err := ssheet.SheetByID(r.SheetID)
 	if err != nil {
 		return []byte{}, err
 	}
